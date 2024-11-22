@@ -1,3 +1,5 @@
+# Scans whole repo and uploads report to GitHub Security > Code scanning
+
 name: build
 on:
   push:
