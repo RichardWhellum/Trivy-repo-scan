@@ -36,9 +36,14 @@ jobs:
           image-ref: '.'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload trivy report as a Github artifact
+      - name: Run Trivy in human-readable format and save to file
+        run: |
+          trivy fs . > trivy-report.txt
+  
+      - name: Upload Trivy report as a GitHub artifact
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-sbom-report
-          path: '${{ github.workspace }}/dependency-results.sbom.json'
-          retention-days: 20 # 90 is the default
+          name: trivy-human-readable-report
+          path: 'trivy-report.txt'
+          retention-days: 90
+  
