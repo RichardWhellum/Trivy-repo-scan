@@ -36,9 +36,13 @@ jobs:
           image-ref: '.'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Trivy in human-readable format and save to file
-        run: |
-          trivy fs . > trivy-report.txt
+      - name: Run Trivy in GitHub SBOM mode and output to txt
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          output: 'dependency-results.txt'
+          image-ref: '.'
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
   
       - name: Upload Trivy report as a GitHub artifact
         uses: actions/upload-artifact@v4
