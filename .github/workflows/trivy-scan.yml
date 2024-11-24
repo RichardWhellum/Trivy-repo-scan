@@ -1,24 +1,44 @@
----
-  name: Pull Request
-  on:
-    push:
-      branches:
+name: Pull Request
+on:
+  push:
+    branches:
       - main
-  
-  permissions:
-    contents: write
-  
-  jobs:
-    build:
-      name: Checks
-      runs-on: ubuntu-20.04
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-  
-        - name: Upload trivy report as a Github artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: trivy-sbom-report
-            path: '${{ github.workspace }}/dependency-results.sbom.json'
-            retention-days: 20 # 90 is the default
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Checks
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+      - name: Run Trivy in GitHub SBOM Mode
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          format: 'github'
+          output: 'dependency-results.sbom.json'
+          image-ref: '.'
+
+      - name: Upload Trivy Report as a GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-sbom-report
+          path: 'dependency-results.sbom.json'
+          retention-days: 90
