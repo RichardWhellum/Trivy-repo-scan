@@ -5,7 +5,6 @@
       branches:
       - main
   
-  ## GITHUB_TOKEN authentication, add only if you're not going to use a PAT
   permissions:
     contents: write
   
@@ -17,11 +16,9 @@
         - name: Checkout code
           uses: actions/checkout@v4
   
-        - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
-          uses: aquasecurity/trivy-action@0.28.0
+        - name: Upload trivy report as a Github artifact
+          uses: actions/upload-artifact@v4
           with:
-            scan-type: 'fs'
-            format: 'github'
-            output: 'dependency-results.sbom.json'
-            image-ref: '.'
-            github-pat: ${{ secrets.GITHUB_TOKEN }} # or ${{ secrets.github_pat_name }} if you're using a PAT
+            name: trivy-sbom-report
+            path: '${{ github.workspace }}/dependency-results.sbom.json'
+            retention-days: 20 # 90 is the default
