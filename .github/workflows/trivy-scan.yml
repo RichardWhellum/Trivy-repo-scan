@@ -36,18 +36,13 @@ jobs:
           image-ref: '.'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Trivy in GitHub SBOM mode and output to txt
-        uses: aquasecurity/trivy-action@0.28.0
+      - name: Trivy scan again
+        run: trivy fs --exit-code 1 --severity CRITICAL .
+
+      - name: Comment on PR
+        uses: reviewdog/action-log@v1
         with:
-          scan-type: 'fs'
-          output: 'dependency-results.txt'
-          image-ref: '.'
-          github-pat: ${{ secrets.GITHUB_TOKEN }}
-  
-      - name: Upload Trivy report as a GitHub artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-human-readable-report
-          path: 'trivy-report.txt'
-          retention-days: 90
+          tool_name: trivy
+          reporter: github-pr-review
+          level: error
   
