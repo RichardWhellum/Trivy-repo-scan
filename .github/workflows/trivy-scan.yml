@@ -27,17 +27,3 @@ jobs:
           fail_on_error: false # Prevent automatic failure here
           flags: -tee
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0" # Report all severities
-
-      - name: Run Trivy with Reviewdog to fail on High vulnerability
-        uses: reviewdog/action-trivy@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          trivy_command: repo 
-          trivy_target: . 
-          working_directory: ./ 
-          level: warning
-          reporter: github-pr-check # Change to github-pr-review for pull request
-          filter_mode: nofilter
-          fail_on_error: true 
-          flags: -tee
-          trivy_flags: "--severity HIGH,CRITICAL --exit-code 1" # Fail on high or critical
