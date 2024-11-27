@@ -14,11 +14,7 @@ jobs:
       - name: Clone repo onto runner
         uses: actions/checkout@v4
 
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-
-      - name: Run Trivy with Reviewdog to output on the PR
+      - name: Run Trivy with Reviewdog and output to PR
         uses: reviewdog/action-trivy@v1
         with:
           github_token: ${{ secrets.github_token }}
@@ -32,7 +28,7 @@ jobs:
           flags: -tee
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0" # Report all severities
 
-      - name: Run Trivy with Reviewdog to output on the PR
+      - name: Run Trivy with Reviewdog to fail on High vulnerability
         uses: reviewdog/action-trivy@v1
         with:
           github_token: ${{ secrets.github_token }}
