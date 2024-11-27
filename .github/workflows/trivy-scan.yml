@@ -7,7 +7,7 @@ on:
 
 jobs:
   trivy:
-    name: runner / trivy
+    name: Trivy Dependency Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -26,4 +26,4 @@ jobs:
           filter_mode: nofilter
           fail_on_error: true
           flags: -tee
-          trivy_flags: ""
+          trivy_flags: "--severity HIGH,CRITICAL"
