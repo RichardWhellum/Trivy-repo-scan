@@ -34,4 +34,4 @@ jobs:
 
       - name: Check for High/Critical vulnerabilities
         run: |
-          ./trivy repo --severity HIGH,CRITICAL --exit-code 1 .
+          trivy repo --severity HIGH,CRITICAL --exit-code 1 .
