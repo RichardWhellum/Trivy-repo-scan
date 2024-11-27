@@ -14,6 +14,10 @@ jobs:
       - name: Clone repo onto runner
         uses: actions/checkout@v4
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+
       - name: Run Trivy with Reviewdog to output on the PR
         uses: reviewdog/action-trivy@v1
         with:
@@ -30,4 +34,4 @@ jobs:
 
       - name: Check for High/Critical vulnerabilities
         run: |
-          trivy repo --severity HIGH,CRITICAL --exit-code 1 .
+          ./trivy repo --severity HIGH,CRITICAL --exit-code 1 .
