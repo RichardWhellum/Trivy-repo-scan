@@ -6,43 +6,24 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-20.04
+  trivy:
+    name: runner / trivy
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Clone repo
         uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@0.28.0
+      - name: Run trivy with reviewdog output on the PR
+        uses: reviewdog/action-trivy@v1
         with:
-          scan-type: 'fs'
-          ignore-unfixed: true
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: 'fs'
-          format: 'github'
-          output: 'dependency-results.sbom.json'
-          image-ref: '.'
-          github-pat: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Trivy scan again
-        run: trivy fs --exit-code 1 --severity CRITICAL .
-
-      - name: Comment on PR
-        uses: reviewdog/action-log@v1
-        with:
-          tool_name: trivy
-          reporter: github-pr-review
-          level: error
-  
+          github_token: ${{ secrets.github_token }}
+          trivy_command: repo # Change trivy command
+          trivy_target: . # Change trivy target directory
+          working_directory: / # Change working directory
+          level: info # Get more output from reviewdog
+          reporter: github-pr-review # Change reviewdog reporter
+          filter_mode: nofilter # Check all files, not just the diff
+          fail_on_error: true # Fail action if errors are found
+          flags: -tee # Add debug flag to reviewdog
+          trivy_flags: "" # Optional
