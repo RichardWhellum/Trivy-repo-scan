@@ -34,19 +34,22 @@ jobs:
     needs: trivy-repo-scan
 
     steps:
-      - name: Clone repo onto runner
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Trivy with Reviewdog and output to PR
+      - name: Get Changed Files
+        id: changed_files
+        run: |
+          echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_ENV
+
+      - name: Run Trivy with Reviewdog on PR Files
         uses: reviewdog/action-trivy@v1
         with:
-          github_token: ${{ secrets.github_token }}
-          trivy_command: repo 
-          trivy_target: . 
-          working_directory: ./ 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          trivy_command: fs
+          trivy_target: "${{ env.CHANGED_FILES }}"
           level: warning
-          reporter: github-pr-check # Change to github-pr-review for pull request
+          reporter: github-pr-check
           filter_mode: nofilter
-          fail_on_error: false # Prevent automatic failure here
-          flags: -tee
-          trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0" # Report all severities
+          fail_on_error: false
+          trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --skip-dirs node_modules"
