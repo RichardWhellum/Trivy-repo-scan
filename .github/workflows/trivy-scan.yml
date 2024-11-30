@@ -47,4 +47,4 @@ jobs:
           reporter: github-pr-check
           filter_mode: file # Only reports issues in changed files
           fail_on_error: false
-          trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --skip-dirs node_modules"
+          trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0"
