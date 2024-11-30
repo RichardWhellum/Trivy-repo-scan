@@ -45,7 +45,7 @@ jobs:
           trivy_target: .
           level: warning
           reporter: github-check
-          filter_mode: nofilter
+          filter_mode: file
           fail_on_error: false
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0"
         env:
