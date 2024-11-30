@@ -41,4 +41,3 @@ jobs:
           fail_on_error: false # Prevent automatic failure here
           flags: -tee
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0" # Report all severities
-          
