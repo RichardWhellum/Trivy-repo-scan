@@ -44,7 +44,7 @@ jobs:
           trivy_command: fs
           trivy_target: . # Scans the whole repo, filtered by filter_mode
           level: warning
-          reporter: github-pr-check
+          reporter: github-check
           filter_mode: file # Only reports issues in changed files
           fail_on_error: false
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0"
