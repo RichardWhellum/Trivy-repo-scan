@@ -37,29 +37,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get Changed Files
-        id: changed_files
-        run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          echo "::set-output name=files::$CHANGED_FILES"
-        shell: bash
-
-      - name: Check if Files Changed
-        run: |
-          if [[ -z "${{ steps.changed_files.outputs.files }}" ]]; then
-            echo "No files changed, skipping Trivy scan."
-            exit 0
-          fi
-
-      - name: Run Trivy with Reviewdog on PR Files
-        if: steps.changed_files.outputs.files != ''
+      - name: Run Trivy with Reviewdog and output to PR
         uses: reviewdog/action-trivy@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           trivy_command: fs
-          trivy_target: "${{ steps.changed_files.outputs.files }}"
+          trivy_target: . # Scans the whole repo, filtered by filter_mode
           level: warning
           reporter: github-pr-check
-          filter_mode: nofilter
+          filter_mode: file # Only reports issues in changed files
           fail_on_error: false
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --skip-dirs node_modules"
