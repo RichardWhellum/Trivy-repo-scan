@@ -6,12 +6,12 @@ on:
   pull_request:
 
 jobs:
-  trivy:
-    name: Trivy Dependency Scan
+  trivy-repo-scan:
+    name: Trivy Repo Scan & Upload to Security Tab
     runs-on: ubuntu-20.04
 
     steps:
-      - name: Clone repo onto runner
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner in repo mode
@@ -28,16 +28,27 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
+  reviewdog-pr-check:
+    name: Trivy PR Check
+    runs-on: ubuntu-20.04
+    needs: trivy-repo-scan
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/scripts/install.sh | sh
+          sudo mv trivy /usr/local/bin/
+
+      - name: Install Reviewdog
+        run: |
+          curl -sfL https://github.com/reviewdog/reviewdog/releases/download/v0.14.0/reviewdog_linux_amd64 -o /usr/local/bin/reviewdog
+          chmod +x /usr/local/bin/reviewdog
+
       - name: Run Trivy with Reviewdog and output to PR
-        uses: reviewdog/action-trivy@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          trivy_command: repo 
-          trivy_target: . 
-          working_directory: ./ 
-          level: warning
-          reporter: github-pr-check # Change to github-pr-review for pull request
-          filter_mode: nofilter
-          fail_on_error: false # Prevent automatic failure here
-          flags: -tee
-          trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0" # Report all severities
+        run: |
+          trivy fs . --severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 | reviewdog -f=trivy -name="Trivy Scan" -reporter=github-pr-check -filter-mode=nofilter -level=warning
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
