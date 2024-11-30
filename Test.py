@@ -7,4 +7,4 @@ def insecure_function():
     print("This function uses potentially vulnerable packages.")
 
 if __name__ == "__main__":
-    insecure_function()
+    insecure_function() 

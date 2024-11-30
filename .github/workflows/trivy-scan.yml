@@ -42,9 +42,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           trivy_command: fs
-          trivy_target: . # Scans the whole repo, filtered by filter_mode
+          trivy_target: .
           level: warning
           reporter: github-check
-          filter_mode: file # Only reports issues in changed files
+          filter_mode: nofilter
           fail_on_error: false
           trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0"
+        env:
+          REVIEWDOG_DEBUG: "true"
+
