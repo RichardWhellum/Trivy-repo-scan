@@ -40,14 +40,24 @@ jobs:
       - name: Get Changed Files
         id: changed_files
         run: |
-          echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_ENV
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          echo "::set-output name=files::$CHANGED_FILES"
+        shell: bash
+
+      - name: Check if Files Changed
+        run: |
+          if [[ -z "${{ steps.changed_files.outputs.files }}" ]]; then
+            echo "No files changed, skipping Trivy scan."
+            exit 0
+          fi
 
       - name: Run Trivy with Reviewdog on PR Files
+        if: steps.changed_files.outputs.files != ''
         uses: reviewdog/action-trivy@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           trivy_command: fs
-          trivy_target: "${{ env.CHANGED_FILES }}"
+          trivy_target: "${{ steps.changed_files.outputs.files }}"
           level: warning
           reporter: github-pr-check
           filter_mode: nofilter
