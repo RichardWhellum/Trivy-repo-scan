@@ -9,6 +9,10 @@ jobs:
   trivy-repo-scan:
     name: Trivy Repo Scan & Upload to Security Tab
     runs-on: ubuntu-20.04
+    permissions:
+        contents: write
+        security-events: write
+
 
     steps:
       - name: Checkout code
@@ -37,17 +41,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Trivy with Reviewdog and output to PR
+      - name: Get Changed Files
+        id: changed-files
+        run: |
+            git fetch origin main
+            git diff --name-only origin/main > changed-files.txt
+        
+      - name: Print Changed Files
+        run: |
+            echo "Changed files:"
+            cat changed-files.txt
+
+      - name: Run Trivy on Changed Files
+        if: success()
+        run: |
+            mkdir trivy-results
+            while read -r file; do
+                echo "Scanning $file..."
+                trivy fs --quiet --severity HIGH,CRITICAL --format json --output trivy-results/$(basename $file).json "$file" || true
+            done < changed-files.txt
+
+      - name: Run Reviewdog
         uses: reviewdog/action-trivy@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          trivy_command: fs
-          trivy_target: . #???
-          level: warning
-          reporter: github-check
-          filter_mode: file
-          fail_on_error: false
-          trivy_flags: "--severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0"
-        env:
-          REVIEWDOG_DEBUG: "true"
-
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            trivy_command: fs
+            trivy_target: ./trivy-results
+            reporter: github-pr-review
+            level: warning
+            fail_on_error: false
